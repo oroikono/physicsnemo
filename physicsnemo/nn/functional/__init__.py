@@ -42,6 +42,7 @@ from .geometry import (
     mesh_poisson_disk_sample,
     mesh_to_voxel_fraction,
     morph_points,
+    procrustes,
     ray_mesh_intersect,
     signed_distance_field,
 )
@@ -92,6 +93,7 @@ __all__ = [
     "na3d",
     "point_to_grid_interpolation",
     "polar_and_dipole_basis",
+    "procrustes",
     "radius_search",
     "real",
     "ray_mesh_intersect",

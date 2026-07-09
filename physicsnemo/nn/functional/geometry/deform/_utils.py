@@ -284,14 +284,63 @@ def normalize_morph_inputs(
     )
 
 
+def normalize_procrustes_inputs(
+    source: torch.Tensor,
+    target: torch.Tensor,
+    scale: bool,
+) -> tuple[torch.Tensor, torch.Tensor, bool]:
+    """Validate and normalize corresponding point sets to rank three."""
+
+    if not isinstance(source, torch.Tensor):
+        raise TypeError(f"source must be a torch.Tensor, got {type(source).__name__}")
+    if not isinstance(target, torch.Tensor):
+        raise TypeError(f"target must be a torch.Tensor, got {type(target).__name__}")
+    if not isinstance(scale, bool):
+        raise TypeError(f"scale must be a bool, got {type(scale).__name__}")
+
+    _validate_points(source, "source")
+    _validate_points(target, "target")
+    _validate_layout(target, source, "source and target", same_shape=True)
+
+    num_points, num_dims = source.shape[-2:]
+    if num_dims > 3:
+        raise ValueError(
+            f"source and target coordinate dimension must be 1, 2, or 3, got {num_dims}"
+        )
+    if num_points < max(2, num_dims):
+        raise ValueError(
+            "Procrustes registration requires at least max(2, num_dims) "
+            f"corresponding points, got {num_points=} and {num_dims=}"
+        )
+
+    source_b3, was_unbatched = _as_batched(source)
+    target_b3, _ = _as_batched(target)
+    return source_b3, target_b3, was_unbatched
+
+
 def restore_point_rank(points: torch.Tensor, was_unbatched: bool) -> torch.Tensor:
     """Restore an originally unbatched output to rank two."""
 
     return points.squeeze(0) if was_unbatched else points
 
 
+def restore_procrustes_rank(
+    rotation: torch.Tensor,
+    translation: torch.Tensor,
+    scale: torch.Tensor,
+    was_unbatched: bool,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Restore unbatched Procrustes outputs to matrix, vector, and scalar."""
+
+    if was_unbatched:
+        return rotation.squeeze(0), translation.squeeze(0), scale.squeeze(0)
+    return rotation, translation, scale
+
+
 __all__ = [
     "normalize_displace_inputs",
     "normalize_morph_inputs",
+    "normalize_procrustes_inputs",
+    "restore_procrustes_rank",
     "restore_point_rank",
 ]

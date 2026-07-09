@@ -14,14 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Warp backend for compact Shepard morphing."""
+"""Warp backends for point deformation and registration."""
 
 from .op import (
     compact_shepard_field_warp_impl,
     morph_points_warp,
 )
+from .procrustes_op import (
+    procrustes_rotation_warp_impl,
+    procrustes_warp,
+)
 
 __all__ = [
     "compact_shepard_field_warp_impl",
     "morph_points_warp",
+    "procrustes_rotation_warp_impl",
+    "procrustes_warp",
 ]

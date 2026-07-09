@@ -80,6 +80,24 @@ For connectivity-preserving object APIs, use
 :meth:`~physicsnemo.mesh.mesh.Mesh.morph`, or
 :meth:`~physicsnemo.mesh.domain_mesh.DomainMesh.morph`.
 
+Procrustes Registration
+-----------------------
+
+.. autofunction:: physicsnemo.nn.functional.procrustes
+
+``procrustes`` aligns point sets with known correspondences in one, two, or
+three spatial dimensions. It estimates a proper rotation and translation, with
+optional isotropic scale. Automatic dispatch selects Torch on CPU and Warp on
+CUDA.
+
+.. rubric:: Visualization
+
+The visualization shows the source, target, and Procrustes-aligned point sets.
+
+.. figure:: /img/nn/functional/geometry/deform/procrustes_overview.png
+   :alt: Corresponding source, target, and Procrustes-aligned point sets
+   :width: 85%
+
 Mesh Poisson Disk Sample
 ------------------------
 
