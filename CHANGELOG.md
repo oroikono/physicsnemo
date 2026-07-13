@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Adds `discover_terms` to `PDE.make_computations`, auto-deriving
+  `detach_names` from an equation's referenced symbols minus the discovered
+  term(s), and adds `physicsnemo/sym/eq/verifiers.py`
+  (`equilibrium_verifier`, `SignConstraint`) -- reusable physics-prior loss
+  terms for gray-box / inverse-problem discovery. Generalizes the
+  hand-written `detach_names` pattern in `examples/cfd/inverse_pinns`.
 - Adds a `global_shape` argument to `ShardTensor.from_local`, enabling the
   no-communication `sharding_shapes="chunk"` path.
 - Adds exact-boundary quality mesh generation to

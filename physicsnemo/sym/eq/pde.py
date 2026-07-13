@@ -83,16 +83,65 @@ class PDE:
     def make_computations(
         self,
         detach_names: list[str] | None = None,
+        discover_terms: list[str] | None = None,
     ) -> list[Computation]:
-        """Convert each equation into a :class:`Computation`.
+        r"""Convert each equation into a :class:`Computation`.
+
+        Parameters
+        ----------
+        detach_names : list[str] or None
+            Names to detach from the autograd graph before the residual is
+            evaluated (see :meth:`Computation.from_sympy`).
+        discover_terms : list[str] or None
+            Names of the quantities being discovered -- typically the
+            output of a network standing in for an unknown coefficient or
+            an unknown term. Every *other* name referenced by the
+            equations is automatically added to ``detach_names``, so the
+            physics loss shapes only the discovered quantities without
+            hand-enumerating every known field and its derivatives (this
+            generalizes the ``freeze_terms`` positional-index mechanism in
+            :meth:`Computation.from_sympy` to stable, named terms).
+            Combines with an explicit ``detach_names`` via union.
 
         Returns
         -------
         list[Computation]
             One computation per equation in ``self.equations``.
+
+        Raises
+        ------
+        ValueError
+            If a name in ``discover_terms`` is not referenced by any
+            equation in ``self.equations``.
+
+        Examples
+        --------
+        >>> from sympy import Symbol, Function
+        >>> class Closure(PDE):
+        ...     def __init__(self):
+        ...         x, t = Symbol("x"), Symbol("t")
+        ...         u = Function("u")(x, t)
+        ...         r = Function("R")(x, t)
+        ...         self.equations = {"residual": u.diff(t) - r}
+        ...
+        >>> pde = Closure()
+        >>> pde.make_computations(discover_terms=["R"])[0].evaluate.detach_names
+        ['u__t']
         """
         if detach_names is None:
             detach_names = []
+        if discover_terms:
+            discover_set = set(discover_terms)
+            referenced: set[str] = set()
+            for eq in self.equations.values():
+                referenced |= Computation.free_symbol_names(eq)
+            unknown = discover_set - referenced
+            if unknown:
+                raise ValueError(
+                    f"discover_terms {sorted(unknown)} not referenced by any "
+                    f"equation in {sorted(self.equations)}"
+                )
+            detach_names = sorted((set(detach_names) | referenced) - discover_set)
 
         return [
             Computation.from_sympy(eq, str(name), detach_names=detach_names)

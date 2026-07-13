@@ -72,6 +72,20 @@ class Computation:
         outputs = [out_name]
         return cls(inputs, outputs, evaluate, name="Sympy Computation: " + out_name)
 
+    @staticmethod
+    def free_symbol_names(eq) -> set[str]:
+        """Names referenced by a SymPy equation, in ``SympyToTorch`` naming.
+
+        Applies the same ``Derivative``/``Function`` -> named ``Symbol``
+        substitution :meth:`from_sympy` uses (so a term like
+        ``u.diff(x, 2)`` is reported as ``"u__x__x"``, matching the keys
+        :class:`~physicsnemo.sym.utils.sympy.torch_printer.SympyToTorch`
+        exposes at runtime), without compiling the expression.
+        """
+        from physicsnemo.sym.utils.sympy.torch_printer import _subs_derivatives
+
+        return {s.name for s in _subs_derivatives(eq).free_symbols}
+
     @property
     def name(self) -> str:
         """Human-readable label for this computation."""
